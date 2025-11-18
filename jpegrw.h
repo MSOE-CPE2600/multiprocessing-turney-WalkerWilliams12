@@ -1,3 +1,14 @@
+/**
+ * @file jpegrw.h
+ * @brief
+ * 
+ * Course: CPE 2600
+ * Section: 111
+ * Assignment: Lab 11
+ * Name: Walker Williams
+ * 
+ * 
+ */
 #ifndef JPEGRW_H
 #define JPEGRW_H
 

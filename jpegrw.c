@@ -1,3 +1,14 @@
+/**
+ * @file jpegwr.c
+ * @brief
+ * 
+ * Course: CPE 2600
+ * Section: 111
+ * Assignment: Lab 11
+ * Name: Walker Williams
+ * 
+ * 
+ */
 /// 
 //  jpegrw.c
 //  Based on example code found here:
