@@ -1,3 +1,15 @@
+/**
+ * @file mandel.c
+ * @brief creates the images for the video by shifting the viewport of the image
+ * 
+ * Course: CPE 2600
+ * Section: 111
+ * Assignment: Lab 11
+ * Name: Walker Williams
+ * 
+ * Compile: gcc -o mandel mandel.c jpegrw.c -ljpeg
+ *          ./mandel
+ */
 /// 
 //  mandel.c
 //  Based on example code found here:
@@ -25,7 +37,7 @@ int main( int argc, char *argv[] )
 
 	// These are the default configuration values used
 	// if no command line arguments are given.
-	const char *outfile = "mandel.jpg";
+	char outfile[50] = "mandel.jpg";
 	double xcenter = 0;
 	double ycenter = 0;
 	double xscale = 4;
@@ -36,7 +48,8 @@ int main( int argc, char *argv[] )
 
 	// For each command line argument given,
 	// override the appropriate configuration value.
-
+	for(int i = 0; i < 300; i++)
+	{
 	while((c = getopt(argc,argv,"x:y:s:W:H:m:o:h"))!=-1) {
 		switch(c) 
 		{
@@ -58,15 +71,19 @@ int main( int argc, char *argv[] )
 			case 'm':
 				max = atoi(optarg);
 				break;
-			case 'o':
-				outfile = optarg;
-				break;
+			//case 'o':
+			//	outfile = &optarg;
+			//	break;
 			case 'h':
 				show_help();
 				exit(1);
 				break;
 		}
 	}
+	xscale = xscale*0.9;
+	snprintf(outfile, sizeof(outfile), "mandel%d.jpg", i);
+	
+
 
 	// Calculate y scale based on x scale (settable) and image sizes in X and Y (settable)
 	yscale = xscale / image_width * image_height;
@@ -88,6 +105,7 @@ int main( int argc, char *argv[] )
 
 	// free the mallocs
 	freeRawImage(img);
+	}
 
 	return 0;
 }
