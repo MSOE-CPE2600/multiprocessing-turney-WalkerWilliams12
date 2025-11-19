@@ -21,7 +21,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <sys/wait.h>
 #include "jpegrw.h"
+
+#define NUM_FRAMES 50
 
 // local routines
 static int iteration_to_color( int i, int max );
@@ -45,12 +48,12 @@ int main( int argc, char *argv[] )
 	int    image_width = 1000;
 	int    image_height = 1000;
 	int    max = 1000;
+	int    num_proc = 1;
 
 	// For each command line argument given,
 	// override the appropriate configuration value.
-	for(int i = 0; i < 300; i++)
-	{
-	while((c = getopt(argc,argv,"x:y:s:W:H:m:o:h"))!=-1) {
+	
+	while((c = getopt(argc,argv,"x:y:s:W:H:m:o:c:h"))!=-1) {
 		switch(c) 
 		{
 			case 'x':
@@ -71,47 +74,69 @@ int main( int argc, char *argv[] )
 			case 'm':
 				max = atoi(optarg);
 				break;
-			//case 'o':
+			//case 'o': // Was causing issues with my file save method
 			//	outfile = &optarg;
 			//	break;
+			case 'c':
+				num_proc = atof(optarg);
+				break;
 			case 'h':
 				show_help();
 				exit(1);
 				break;
 		}
 	}
-	xscale = xscale*0.9;
-	snprintf(outfile, sizeof(outfile), "mandel%d.jpg", i);
+
+	int active_children = 0;
 	
+	 for (int i = 0; i < NUM_FRAMES; i++)
+    {
+        while (active_children >= num_proc) {
+            wait(NULL);
+            active_children--;
+        }
 
+        pid_t pid = fork();
 
-	// Calculate y scale based on x scale (settable) and image sizes in X and Y (settable)
-	yscale = xscale / image_width * image_height;
+        if (pid < 0)
+        {
+            perror("fork failed");
+            exit(1);
+        }
+        else if (pid == 0)
+        {
+            snprintf(outfile, sizeof(outfile), "mandel%d.jpg", i);
 
-	// Display the configuration of the image.
-	printf("mandel: x=%lf y=%lf xscale=%lf yscale=%1f max=%d outfile=%s\n",xcenter,ycenter,xscale,yscale,max,outfile);
+            yscale = xscale / image_width * image_height;
 
-	// Create a raw image of the appropriate size.
-	imgRawImage* img = initRawImage(image_width,image_height);
+            printf("mandel: x=%lf y=%lf xscale=%lf yscale=%1f max=%d outfile=%s\n",xcenter,ycenter,xscale,yscale,max,outfile);
 
-	// Fill it with a black
-	setImageCOLOR(img,0);
+            imgRawImage* img = initRawImage(image_width, image_height);
+            setImageCOLOR(img, 0);
 
-	// Compute the Mandelbrot image
-	compute_image(img,xcenter-xscale/2,xcenter+xscale/2,ycenter-yscale/2,ycenter+yscale/2,max);
+            compute_image(img, xcenter - xscale/2, xcenter + xscale/2, ycenter - yscale/2, ycenter + yscale/2, max);
 
-	// Save the image in the stated file.
-	storeJpegImageFile(img,outfile);
+            storeJpegImageFile(img, outfile);
 
-	// free the mallocs
-	freeRawImage(img);
-	}
+            freeRawImage(img);
 
-	return 0;
+            exit(0); 
+        }
+        else
+        {
+            active_children++;
+            xscale *= 0.90;
+        }
+    }
+
+    while (active_children > 0)
+    {
+        wait(NULL);
+        active_children--;
+    }
+
+    return 0;
 }
-
-
-
 
 /*
 Return the number of iterations at point x, y
