@@ -28,6 +28,16 @@
 #define NUM_FRAMES 50
 #define MAX_THREADS 20
 
+/**
+ * Thread data struct
+ * @param xmin - minimum x to start
+ * @param xmax - maximum x location
+ * @param ymin - minimum  to start
+ * @param ymax - maximum y location
+ * @param max - number of iterations
+ * @param start_row - which row to start at
+ * @param end_row - which row to end at
+ */
 typedef struct 
 {
 	imgRawImage *img;
@@ -193,7 +203,7 @@ int iterations_at_point( double x, double y, int max )
 }
 
 /**
- * Thread helper function to compute part of the image
+ * @brief helper function to compute part of the image
  */
 void* compute_image_thread(void *arg)
 {
